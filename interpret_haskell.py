@@ -8,7 +8,6 @@ def cleanup_prelude(text):
 
 class ghci_interpret(sublime_plugin.ApplicationCommand):
     def __init__(self):
-        print "HI!!!!!"
         self.process = subprocess.Popen(["ghci"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
         if self.process.stdout:
