@@ -6,6 +6,20 @@ def cleanup_prelude(text):
     repeated_text = text.split("| ")[0].replace('>', '') + "| "
     return text.replace(repeated_text, "")
 
+def is_literate(text):
+    return text[0:2] == "> "
+
+def remove_literate(text):
+    if (is_literate(text)):
+        return text[2:]
+    return text
+
+def filter_literate_text(text):
+    if (not is_literate(text)):
+        return text
+    return '\n'.join(map(remove_literate, text.splitlines()))
+    
+
 class ghci_interpret(sublime_plugin.ApplicationCommand):
     def __init__(self):
         self.process = subprocess.Popen(["ghci"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -42,5 +56,7 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
             if not region.empty():
                 # Get the selected text
                 text = view.substr(region)
-                # Write to GHCi using multi-line syntax so we can support multiple lines
-                map(self.tell_ghci, [":{", text, ":}",])
+            else:
+                text = view.substr(view.line(region))
+            # Write to GHCi using multi-line syntax so we can support multiple lines
+                map(self.tell_ghci, [":{", filter_literate_text(text), ":}",])
