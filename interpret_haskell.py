@@ -19,11 +19,9 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
         self.setup_prompt()
         
     def setup_prompt(self):
-        self.process.stdin.write(":set prompt >")
-        self.process.stdin.write('\n')
+        self.tell_ghci(":set prompt >")
         # we force ghci to print something to keep it from buffering its first "Prelude>" output
-        self.process.stdin.write("print \"GHCi Ready.\"")
-        self.process.stdin.write('\n')
+        self.tell_ghci("print \"GHCi Ready.\"")
     
     def read_stdout(self):
         while True:
@@ -33,13 +31,16 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
         while True:
             print cleanup_prelude(self.process.stderr.readline())
     
+    def tell_ghci(self, text):
+        ghci = self.process.stdin
+        map(ghci.write, [text, '\n'])
+    
     def run(self):
         window = sublime.active_window()
         view = window.active_view()
-        ghci = self.process.stdin
         for region in view.sel():
             if not region.empty():
                 # Get the selected text
                 text = view.substr(region)
                 # Write to GHCi using multi-line syntax so we can support multiple lines
-                map(ghci.write, [":{", '\n', text, '\n', ":}", '\n'])
+                map(self.tell_ghci, [":{", text, ":}",])
