@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 import subprocess, thread, os
 
+#GHCi gives us lots of "Prelude|" lines when we give it multi-line input, so we clean these up
 def cleanup_prelude(text):
     #first item minus the > at the beginning
     repeated_text = text.split("| ")[0].replace('>', '') + "| "
@@ -19,6 +20,20 @@ def filter_literate_text(text):
         return text
     return '\n'.join(map(remove_literate, text.splitlines()))
     
+#Group together lines with subsequent indented lines to determine what should be given to GHCi using multi-line mode and what to give with single-line mode
+def group_indented_sections(text):
+    groups = []
+    current_group = []
+    for line in text.splitlines():
+        if line[:1].isspace():
+            current_group.append(line)
+        else:
+            if len(current_group):
+                groups.append(current_group)
+            current_group = [line]
+    if len(current_group):
+        groups.append(current_group)
+    return groups
 
 class ghci_interpret(sublime_plugin.ApplicationCommand):
     def __init__(self):
@@ -47,7 +62,18 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
     
     def tell_ghci(self, text):
         ghci = self.process.stdin
+        print text
         map(ghci.write, [text, '\n'])
+    
+    def tell_ghci_interpret(self, text):
+        # Write to GHCi using multi-line syntax so we can support multiple lines
+        text = filter_literate_text(text)
+        grouped_lines = group_indented_sections(text)
+        for line_group in grouped_lines:
+            if (len(line_group) == 1):
+                self.tell_ghci(line_group[0])
+            else:
+                map(self.tell_ghci, [":{"] + line_group + [":}"])
     
     def run(self):
         window = sublime.active_window()
@@ -58,5 +84,4 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
                 text = view.substr(region)
             else:
                 text = view.substr(view.line(region))
-            # Write to GHCi using multi-line syntax so we can support multiple lines
-                map(self.tell_ghci, [":{", filter_literate_text(text), ":}",])
+            self.tell_ghci_interpret(text)
