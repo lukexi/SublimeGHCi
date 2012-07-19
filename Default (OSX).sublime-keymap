@@ -1,0 +1,3 @@
+[
+    { "keys": ["command+h"], "command": "ghci_interpret" }
+]

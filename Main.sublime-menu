@@ -1,0 +1,15 @@
+[
+{
+  "id": "tools",
+  "children":
+  [
+    {
+        "caption": "GHCi",
+        "children":
+        [
+            { "command": "ghci_interpret", "caption": "Interpret in GHCi"}
+        ]
+    }
+  ]
+}
+]
