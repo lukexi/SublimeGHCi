@@ -19,8 +19,30 @@ def filter_literate_text(text):
     if (not is_literate(text)):
         return text
     return '\n'.join(map(remove_literate, text.splitlines()))
+
+#Turns top-level assignments (e.g. x = 5) into let statements to work with GHCi
+def add_let_if_needed(text):
+    let = "let"
+    split = text.split("=")
+    before_first_equals = split[0]
+    if (len(split) == 1 or before_first_equals[:3] == let):
+        return text
+    return let + " " + text
     
 #Group together lines with subsequent indented lines to determine what should be given to GHCi using multi-line mode and what to give with single-line mode
+group_indented_sections_testcase = """\
+do
+    x <- return 1
+    case x of
+        1 -> print "hi"
+    print "seven"
+print "ham"
+do
+    x <- return 5
+    print x
+print "cheese"
+print "whiz"
+"""
 def group_indented_sections(text):
     groups = []
     current_group = []
@@ -70,10 +92,11 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
         text = filter_literate_text(text)
         grouped_lines = group_indented_sections(text)
         for line_group in grouped_lines:
+            line_group_with_let_if_needed = [add_let_if_needed(line_group[0])] + line_group[1:]
             if (len(line_group) == 1):
-                self.tell_ghci(line_group[0])
+                self.tell_ghci(line_group_with_let_if_needed[0])
             else:
-                map(self.tell_ghci, [":{"] + line_group + [":}"])
+                map(self.tell_ghci, [":{"] + line_group_with_let_if_needed + [":}"])
     
     def run(self):
         window = sublime.active_window()
