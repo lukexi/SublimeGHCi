@@ -1,3 +1,4 @@
 [
-    { "keys": ["command+h"], "command": "ghci_interpret" }
+    { "keys": ["command+r"], "command": "ghci_interpret" },
+    { "keys": ["command+e"], "command": "ghci_browse" }
 ]
