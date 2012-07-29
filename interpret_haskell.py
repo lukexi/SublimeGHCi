@@ -101,13 +101,17 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
             else:
                 map(self.tell_ghci, [":{"] + line_group_with_let_if_needed + [":}"])
     
-    def run(self):
+    def run(self, **kwargs):
+        prepend = ""
+        if (kwargs.has_key("prepend")):
+            prepend = kwargs["prepend"]
         window = sublime.active_window()
         view = window.active_view()
+        # for each region in the current view, run on either the region's selection or the line
         for region in view.sel():
             if not region.empty():
                 # Get the selected text
                 text = view.substr(region)
-            else:
+            else: # Get the text of the current line
                 text = view.substr(view.line(region))
-            self.tell_ghci_interpret(text)
+            self.tell_ghci_interpret(prepend + text)
