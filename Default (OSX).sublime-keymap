@@ -1,6 +1,7 @@
 [
-    { "keys": ["control+command+alt+c"], "command": "ghci_interpret" },
-    { "keys": ["control+command+alt+b"], "command": "ghci_interpret", "args": {"prepend":":browse "}},
-    { "keys": ["control+command+alt+t"], "command": "ghci_interpret", "args": {"prepend":":type "}},
-    { "keys": ["control+command+alt+i"], "command": "ghci_interpret", "args": {"prepend":":info "}}
+    { "keys": ["control+command+alt+c"], "command": "ghci_interpret_regions" },
+    { "keys": ["control+command+alt+b"], "command": "ghci_browse_module" },
+    { "keys": ["control+command+alt+t"], "command": "ghci_print_type" },
+    { "keys": ["control+command+alt+i"], "command": "ghci_print_info" },
+    { "keys": ["control+command+alt+l"], "command": "ghci_load_module" }
 ]

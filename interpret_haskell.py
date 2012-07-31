@@ -60,7 +60,54 @@ def group_indented_sections(text):
         groups.append(current_group)
     return groups
 
-class ghci_interpret(sublime_plugin.ApplicationCommand):
+class GhciLoadModule(sublime_plugin.TextCommand):
+    def run(self, edit):
+        command = ":load " + self.view.file_name()
+        sublime.run_command("ghci_interpret_text", {"text":command})
+
+class GhciBrowseModule(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.view.run_command("ghci_interpret_regions", {"prepend":":browse "})
+
+class GhciPrintType(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.view.run_command("ghci_interpret_regions", {"prepend":":type "})
+
+class GhciPrintInfo(sublime_plugin.TextCommand):
+    def run(self, edit):
+        self.view.run_command("ghci_interpret_regions", {"prepend":":info "})
+
+class GhciInterpretRegions(sublime_plugin.TextCommand):
+    def run(self, edit, **kwargs):
+        print "hi"
+        prepend = ""
+        if (kwargs.has_key("prepend")):
+            prepend = kwargs["prepend"]
+        # for each region in the current view, run on either the region's selection or the line
+        for region in self.view.sel():
+            if not region.empty():
+                # Get the selected text
+                text = self.view.substr(region)
+            else: # Get the text of the current line
+                text = self.view.substr(self.view.line(region))
+            self.tell_ghci_multiline(prepend + text)
+    
+    def tell_ghci_multiline(self, text):
+        # Write to GHCi using multi-line syntax so we can support multiple lines
+        text = filter_literate_text(text)
+        grouped_lines = group_indented_sections(text)
+        for line_group in grouped_lines:
+            is_single_line = len(line_group) == 1
+            line_group_with_let_if_needed = [add_let_if_needed(line_group[0])] + line_group[1:]
+            if (is_single_line):
+                self.tell_ghci(line_group_with_let_if_needed[0])
+            else:
+                map(self.tell_ghci, [":{"] + line_group_with_let_if_needed + [":}"])
+    
+    def tell_ghci(self, text):
+        sublime.run_command("ghci_interpret_text", {"text":text})
+
+class GhciInterpretText(sublime_plugin.ApplicationCommand):
     def __init__(self):
         self.process = subprocess.Popen(["ghci"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
@@ -90,28 +137,5 @@ class ghci_interpret(sublime_plugin.ApplicationCommand):
         print text
         map(ghci.write, [text, '\n'])
     
-    def tell_ghci_interpret(self, text):
-        # Write to GHCi using multi-line syntax so we can support multiple lines
-        text = filter_literate_text(text)
-        grouped_lines = group_indented_sections(text)
-        for line_group in grouped_lines:
-            line_group_with_let_if_needed = [add_let_if_needed(line_group[0])] + line_group[1:]
-            if (len(line_group) == 1):
-                self.tell_ghci(line_group_with_let_if_needed[0])
-            else:
-                map(self.tell_ghci, [":{"] + line_group_with_let_if_needed + [":}"])
-    
-    def run(self, **kwargs):
-        prepend = ""
-        if (kwargs.has_key("prepend")):
-            prepend = kwargs["prepend"]
-        window = sublime.active_window()
-        view = window.active_view()
-        # for each region in the current view, run on either the region's selection or the line
-        for region in view.sel():
-            if not region.empty():
-                # Get the selected text
-                text = view.substr(region)
-            else: # Get the text of the current line
-                text = view.substr(view.line(region))
-            self.tell_ghci_interpret(prepend + text)
+    def run(self, text=""):
+        self.tell_ghci(text)

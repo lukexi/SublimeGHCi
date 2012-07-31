@@ -7,10 +7,11 @@
         "caption": "GHCi",
         "children":
         [
-            { "command": "ghci_interpret", "caption": "Interpret in GHCi"},
-            { "command": "ghci_interpret", "caption": "Browse Module", "args": {"prepend":":browse "}},
-            { "command": "ghci_interpret", "caption": "Print Type", "args": {"prepend":":type "}},
-            { "command": "ghci_interpret", "caption": "Print Info", "args": {"prepend":":info "}}
+            { "command": "ghci_interpret_regions", "caption": "Interpret in GHCi"},
+            { "command": "ghci_browse_module", "caption": "Browse Module" },
+            { "command": "ghci_print_type", "caption": "Print Type" },
+            { "command": "ghci_print_info", "caption": "Print Info" },
+            { "command": "ghci_load_module", "caption": "Load Current File" }
         ]
     }
   ]
