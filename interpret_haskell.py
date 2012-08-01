@@ -22,16 +22,13 @@ def filter_literate_text(text):
 
 #Turns top-level assignments (e.g. x = 5) into let statements to work with GHCi
 def add_let_if_needed(text):
-    let = "let"
-    data = "data"
-    split = text.split("=")
-    before_first_equals = split[0]
-    if (len(split) == 1 or 
-        before_first_equals[:3] == let or 
-        before_first_equals[:4] == data):
+    keywords = ["let", "data", "type"]
+    has_no_equals_sign = text.find("=") > 0
+    begins_with_keyword = any([text.startswith(keyword) for keyword in keywords])
+    if (has_no_equals_sign or begins_with_keyword):
         return text
     return let + " " + text
-    
+
 #Group together lines with subsequent indented lines to determine what should be given to GHCi using multi-line mode and what to give with single-line mode
 group_indented_sections_testcase = """\
 do
