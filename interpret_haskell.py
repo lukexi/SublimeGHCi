@@ -23,7 +23,7 @@ def filter_literate_text(text):
 #Turns top-level assignments (e.g. x = 5) into let statements to work with GHCi
 def add_let_if_needed(text):
     keywords = ["let", "data", "type"]
-    has_no_equals_sign = text.find("=") > 0
+    has_no_equals_sign = text.find("=") == -1
     begins_with_keyword = any([text.startswith(keyword) for keyword in keywords])
     if (has_no_equals_sign or begins_with_keyword):
         return text
@@ -57,22 +57,32 @@ def group_indented_sections(text):
         groups.append(current_group)
     return groups
 
+def ghci(text):
+    sublime.run_command("ghci_interpret_text", {"text":text})
+
 class GhciLoadModule(sublime_plugin.TextCommand):
     def run(self, edit):
         command = ":load " + self.view.file_name()
-        sublime.run_command("ghci_interpret_text", {"text":command})
+        ghci(command)
 
-class GhciBrowseModule(sublime_plugin.TextCommand):
-    def run(self, edit):
-        self.view.run_command("ghci_interpret_regions", {"prepend":":browse "})
+class GhciCommand(sublime_plugin.TextCommand):
+    def run_command_on_regions(self, command):
+        for region in self.view.sel():
+            if not region.empty():
+                text = self.view.substr(region)
+                ghci(":"+command+" "+text)
 
-class GhciPrintType(sublime_plugin.TextCommand):
+class GhciBrowseModule(GhciCommand):
     def run(self, edit):
-        self.view.run_command("ghci_interpret_regions", {"prepend":":type "})
+        self.run_command_on_regions("browse")
 
-class GhciPrintInfo(sublime_plugin.TextCommand):
+class GhciPrintType(GhciCommand):
     def run(self, edit):
-        self.view.run_command("ghci_interpret_regions", {"prepend":":info "})
+        self.run_command_on_regions("type")
+
+class GhciPrintInfo(GhciCommand):
+    def run(self, edit):
+        self.run_command_on_regions("info")
 
 class GhciInterpretRegions(sublime_plugin.TextCommand):
     def run(self, edit, **kwargs):
@@ -102,7 +112,7 @@ class GhciInterpretRegions(sublime_plugin.TextCommand):
                 map(self.tell_ghci, [":{"] + line_group_with_let_if_needed + [":}"])
     
     def tell_ghci(self, text):
-        sublime.run_command("ghci_interpret_text", {"text":text})
+        ghci(text)
 
 class GhciInterpretText(sublime_plugin.ApplicationCommand):
     def __init__(self):
