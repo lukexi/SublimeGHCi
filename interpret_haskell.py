@@ -27,7 +27,7 @@ def add_let_if_needed(text):
     begins_with_keyword = any([text.startswith(keyword) for keyword in keywords])
     if (has_no_equals_sign or begins_with_keyword):
         return text
-    return let + " " + text
+    return "let " + text
 
 #Group together lines with subsequent indented lines to determine what should be given to GHCi using multi-line mode and what to give with single-line mode
 group_indented_sections_testcase = """\
