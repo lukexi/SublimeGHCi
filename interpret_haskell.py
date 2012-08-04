@@ -1,5 +1,5 @@
 import sublime, sublime_plugin
-import subprocess, thread, os
+import subprocess, thread, os, os.path
 
 #GHCi gives us lots of "Prelude|" lines when we give it multi-line input, so we clean these up
 def cleanup_prelude(text):
@@ -62,8 +62,10 @@ def ghci(text):
 
 class GhciLoadModule(sublime_plugin.TextCommand):
     def run(self, edit):
-        command = ":load " + self.view.file_name()
-        ghci(command)
+        file_name = self.view.file_name()
+        file_dir = os.path.dirname(file_name)
+        ghci(":cd " + file_dir)
+        ghci(":load " + file_name)
 
 class GhciCommand(sublime_plugin.TextCommand):
     def run_command_on_regions(self, command):
