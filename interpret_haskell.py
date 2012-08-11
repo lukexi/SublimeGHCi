@@ -66,6 +66,10 @@ class GhciLoadModule(sublime_plugin.TextCommand):
         file_dir = os.path.dirname(file_name)
         ghci(":cd " + file_dir)
         ghci(":load " + file_name)
+        ghci(":load " + quote_text(documentation_helper_path()))
+
+def quote_text(text):
+    return "\"" + text + "\""
 
 class GhciCommand(sublime_plugin.TextCommand):
     def run_command_on_regions(self, command, quote=False):
@@ -73,7 +77,7 @@ class GhciCommand(sublime_plugin.TextCommand):
             if not region.empty():
                 text = self.view.substr(region)
                 if quote:
-                    text = "\"" + text + "\""
+                    text = quote_text(text)
                 ghci(command+" "+text)
 
 class GhciOpenModuleDocs(GhciCommand):
@@ -122,10 +126,13 @@ class GhciInterpretRegions(sublime_plugin.TextCommand):
     def tell_ghci(self, text):
         ghci(text)
 
+def documentation_helper_path():
+    return sublime.packages_path() + "/SublimeGHCi/" + "FindDocumentation.hs"
+
 class GhciInterpretText(sublime_plugin.ApplicationCommand):
     def __init__(self):
-        documentation_helper_path = sublime.packages_path() + "/SublimeGHCi/" + "FindDocumentation.hs"
-        self.process = subprocess.Popen(["ghci", documentation_helper_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        self.process = subprocess.Popen(["ghci", documentation_helper_path()], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
         if self.process.stdout:
             thread.start_new_thread(self.read_stdout, ())
