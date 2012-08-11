@@ -3,5 +3,6 @@
     { "keys": ["control+command+alt+b"], "command": "ghci_browse_module" },
     { "keys": ["control+command+alt+t"], "command": "ghci_print_type" },
     { "keys": ["control+command+alt+i"], "command": "ghci_print_info" },
-    { "keys": ["control+command+alt+l"], "command": "ghci_load_module" }
+    { "keys": ["control+command+alt+l"], "command": "ghci_load_module" },
+    { "keys": ["control+command+alt+d"], "command": "ghci_open_module_docs" }
 ]

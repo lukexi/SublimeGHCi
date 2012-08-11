@@ -68,23 +68,29 @@ class GhciLoadModule(sublime_plugin.TextCommand):
         ghci(":load " + file_name)
 
 class GhciCommand(sublime_plugin.TextCommand):
-    def run_command_on_regions(self, command):
+    def run_command_on_regions(self, command, quote=False):
         for region in self.view.sel():
             if not region.empty():
                 text = self.view.substr(region)
-                ghci(":"+command+" "+text)
+                if quote:
+                    text = "\"" + text + "\""
+                ghci(command+" "+text)
+
+class GhciOpenModuleDocs(GhciCommand):
+    def run(self, edit):
+        self.run_command_on_regions("openDocsFor", quote=True)
 
 class GhciBrowseModule(GhciCommand):
     def run(self, edit):
-        self.run_command_on_regions("browse")
+        self.run_command_on_regions(":browse")
 
 class GhciPrintType(GhciCommand):
     def run(self, edit):
-        self.run_command_on_regions("type")
+        self.run_command_on_regions(":type")
 
 class GhciPrintInfo(GhciCommand):
     def run(self, edit):
-        self.run_command_on_regions("info")
+        self.run_command_on_regions(":info")
 
 class GhciInterpretRegions(sublime_plugin.TextCommand):
     def run(self, edit, **kwargs):
@@ -118,7 +124,8 @@ class GhciInterpretRegions(sublime_plugin.TextCommand):
 
 class GhciInterpretText(sublime_plugin.ApplicationCommand):
     def __init__(self):
-        self.process = subprocess.Popen(["ghci"], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        documentation_helper_path = sublime.packages_path() + "/SublimeGHCi/" + "FindDocumentation.hs"
+        self.process = subprocess.Popen(["ghci", documentation_helper_path], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
         if self.process.stdout:
             thread.start_new_thread(self.read_stdout, ())

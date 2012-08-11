@@ -11,7 +11,8 @@
             { "command": "ghci_browse_module", "caption": "Browse Module" },
             { "command": "ghci_print_type", "caption": "Print Type" },
             { "command": "ghci_print_info", "caption": "Print Info" },
-            { "command": "ghci_load_module", "caption": "Load Current File" }
+            { "command": "ghci_load_module", "caption": "Load Current File" },
+            { "command": "ghci_open_module_docs", "caption": "Open Module Docs" }
         ]
     }
   ]
