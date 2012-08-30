@@ -1,5 +1,6 @@
 import Control.Monad.Trans
 import Control.Monad.State
+
 > test3 = do
 >     modify (+ 1)
 >     lift $ modify (++ "1")

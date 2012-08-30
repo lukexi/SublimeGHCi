@@ -65,8 +65,8 @@ class GhciLoadModule(sublime_plugin.TextCommand):
         file_name = self.view.file_name()
         file_dir = os.path.dirname(file_name)
         ghci(":cd " + file_dir)
-        ghci(":load " + file_name)
-        ghci(":load " + quote_text(documentation_helper_path()))
+        ghci(":load " + quote_text(file_name) + " " + quote_text(documentation_helper_path()))
+        ghci(":module +FindDocumentation")
 
 def quote_text(text):
     return "\"" + text + "\""
